@@ -1,7 +1,12 @@
 <?php
 
-interface IMVCControllerFactory {
-	
+interface IMVCControllerFactory
+{
+	/**
+	 * Get controller instance
+	 * @param $controllerName
+	 * @return IMVCController
+	 */
 	public function GetController($controllerName);
-	
+
 }

@@ -1,48 +1,83 @@
 <?php
 
-class MVCControllerFactory implements  {
-
-	/**
-	 * @var callable 
-	 */
-	private $factoryMethod = null;
-	
-	/**
-	 * @var string
-	 */
-	private $controllerClassPrefix = '';
+/**
+ * Class MVCControllerFactory
+ */
+class MVCControllerFactory implements IMVCControllerFactory {
 
 	/**
 	 * @var string
 	 */
-	private $controllerClassSuffix = '';
+	protected $controllerClassPrefix = '';
 
-	public function __construct(callable $factoryMethod = null) {
-		$this->factoryMethod = $factoryMethod;
+	/**
+	 * @var string
+	 */
+	protected $controllerClassSuffix = '';
+
+	/**
+	 * Get controller class name
+	 * @param string $controller
+	 * @return string
+	 */
+	protected function getControllerClassName($controller) {
+		return $this->controllerClassPrefix . $controller . $this->controllerClassSuffix;
 	}
 
-	private function getControllerClassName($controllerName) {
-		return $this->controllerClassPrefix . $controllerName . $this->controllerClassSuffix;
+	/**
+	 * Validate controller class name to see if class exists and matches specified interface
+	 * @param string $controllerClassName
+	 * @throws MVCControllerFactoryException
+	 */
+	protected function validateControllerClassName($controllerClassName)
+	{
+		if (!class_exists($controllerClassName))
+			throw new MVCControllerFactoryException("Could not find controller class '$controllerClassName'");
+
+		if (!OnePHP::ClassImplements($controllerClassName, IMVCController::class))
+			throw new MVCControllerFactoryException("Class '$controllerClassName' does not implement the required interface '" . IMVCController::class . "'");
 	}
-	
-	private function constructControllerInstance($controllerClassName) {
+
+	/**
+	 * Get instance of controller by class name
+	 * @param $controllerClassName
+	 * @return IMVCController
+	 */
+	protected function constructControllerInstance($controllerClassName) {
+		$this->validateControllerClassName($controllerClassName);
 		return new $controllerClassName;
 	}
 
+	/**
+	 * Set controller class prefix
+	 * @param string $controllerClassPrefix
+	 */
 	public function SetClassPrefix($controllerClassPrefix) {
 		$this->controllerClassPrefix = $controllerClassPrefix;
 	}
 
+	/**
+	 * Set controller class suffix
+	 * @param string $controllerClassSuffix
+	 */
 	public function SetClassSuffx($controllerClassSuffix) {
 		$this->controllerClassSuffix = $controllerClassSuffix;
 	}
 
-	public function GetInstance($controllerName) {
-		$controllerClassName = $this->getControllerClassName($controllerName);
-		if (!is_null($this->factoryMethod))
-			$this->factoryMethod($controllerClassName);
-		
+	/**
+	 * @param string $controller
+	 * @return IMVCController
+	 */
+	public function GetController($controller) {
+		$controllerClassName = $this->getControllerClassName($controller);
 		return $this->constructControllerInstance($controllerClassName);
 	}
 
+}
+
+/**
+ * Class MVCControllerFactoryException
+ */
+class MVCControllerFactoryException extends Exception
+{
 }
