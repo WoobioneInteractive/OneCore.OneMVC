@@ -2,6 +2,8 @@
 
 class OneMVC implements IPlugin
 {
+	const Config_BaseTemplate = 'onemvc.baseTemplate';
+
 	/**
 	 * @var IConfiguration
 	 */
@@ -27,6 +29,13 @@ class OneMVC implements IPlugin
 	 */
 	private $manager;
 
+	/**
+	 * OneMVC constructor.
+	 * @param IConfiguration $configuration
+	 * @param DependencyInjector $di
+	 * @param IFileAutoLoader $fileAutoLoader
+	 * @param IPluginLoader $pluginLoader
+	 */
 	public function __construct(IConfiguration $configuration, DependencyInjector $di, IFileAutoLoader $fileAutoLoader, IPluginLoader $pluginLoader)
 	{
 		$this->configuration = $configuration;
@@ -37,8 +46,17 @@ class OneMVC implements IPlugin
 		$this->registerDependencies();
 
 		$this->manager = $di->AutoWire(OneMVCManager::class);
+		$this->manager->SetRootDirectory($this->pluginLoader->GetApplicationDirectory());
+
+		// Set base template from config
+		$baseTemplate = $this->configuration->Get(self::Config_BaseTemplate);
+		if ($baseTemplate)
+			$this->manager->SetBaseTemplate($baseTemplate);
 	}
 
+	/**
+	 * Register dependencies
+	 */
 	private function registerDependencies()
 	{
 		$this->di->AddMapping(new DependencyMappingFromArray([
@@ -53,6 +71,12 @@ class OneMVC implements IPlugin
 		]));
 	}
 
+	/**
+	 * Execute MVC
+	 * @param $controller
+	 * @param $action
+	 * @param array $parameters
+	 */
 	public function Execute($controller, $action, $parameters = [])
 	{
 		// TODO Should use autoloader - but autoloader needs to be more powerful first

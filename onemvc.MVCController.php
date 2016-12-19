@@ -1,14 +1,31 @@
 <?php
 
-abstract class MVCController implements IMVCController {
-	
+abstract class MVCController implements IMVCController
+{
+	/**
+	 * @var string
+	 */
+	protected $template;
+
 	/**
 	 * @var array
 	 */
 	protected $viewBag = [];
-	
-	public function __construct($viewBag = []) {
-		$this->viewBag = $viewBag;
+
+	/**
+	 * @return string
+	 */
+	public function GetTemplateName()
+	{
+		return $this->template;
 	}
-	
+
+	/**
+	 * @return array
+	 */
+	public function GetViewBag()
+	{
+		return $this->viewBag;
+	}
+
 }
